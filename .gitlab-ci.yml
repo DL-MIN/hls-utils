@@ -30,4 +30,4 @@ build-go:
 upload-go:
   stage: upload
   script:
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "public/hls-subscriber-stats" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/release/hls-subscriber-stats.linux-x84_64"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "public/hls-subscriber-stats" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/linux/x86_64/hls-subscriber-stats"'
