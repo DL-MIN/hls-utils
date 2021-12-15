@@ -13,7 +13,6 @@ before_script:
 stages:
   - build
   - upload
-  - release
 
 build-go:
   stage: build
@@ -31,13 +30,4 @@ build-go:
 upload-go:
   stage: upload
   script:
-    - |
-      curl -v --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "public/hls-subscriber-stats" "${PACKAGE_REGISTRY_URL}/hls-subscriber-stats.x86_64"
-
-release-go:
-  stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - |
-      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
-        --assets-link "{\"name\":\"hls-subscriber-stats.x86_64\",\"url\":\"${PACKAGE_REGISTRY_URL}/hls-subscriber-stats.x86_64\"}"
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "public/hls-subscriber-stats" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/hls-subscriber-stats.linux-x84_64"'
