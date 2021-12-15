@@ -32,7 +32,7 @@ upload-go:
   stage: upload
   script:
     - |
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "public/hls-subscriber-stats" "${PACKAGE_REGISTRY_URL}/hls-subscriber-stats.x86_64"
+      curl -v --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "public/hls-subscriber-stats" "${PACKAGE_REGISTRY_URL}/hls-subscriber-stats.x86_64"
 
 release-go:
   stage: release
