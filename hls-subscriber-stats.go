@@ -71,7 +71,6 @@ func ParseLog(path *string, stream *string, dist *distribution) {
 
     // prepare filter
     time := time.Now().Unix() / 100
-    time = 16393997
     regex := regexp.MustCompile(
         "^" + strconv.FormatInt(time, 10) + "[\\d]{2}\\.[\\d]+.*?" + regexp.QuoteMeta(*stream) + "-([\\d]+).ts$")
 
