@@ -1,11 +1,11 @@
 /*******************************************************************************
  * parse access.log to receive the current number of HLS subscribers
- * 
+ *
  * logformat: [UNIX TIMESTAMP (or msec)] [FILE]
  * e.g.:      1639399770.294 /srv/domain.tld/hls/stream-name-12.ts
- * 
+ *
  * @author Lars Thoms
- * @date   2021-12-15 
+ * @date   2023-03-29
  ******************************************************************************/
 
 package main
@@ -20,21 +20,18 @@ import (
     "time"
 )
 
-
 /*******************************************************************************
  * distribution struct
  ******************************************************************************/
 
 type distribution struct {
     dist map[uint64]uint64
-    max uint64 
+    max  uint64
 }
 
-
-func (d * distribution) Init() {
+func (d *distribution) Init() {
     d.dist = make(map[uint64]uint64)
 }
-
 
 func (d *distribution) Count(i uint64) {
     d.dist[i]++
@@ -43,11 +40,9 @@ func (d *distribution) Count(i uint64) {
     }
 }
 
-
 func (d *distribution) Get(i uint64) uint64 {
     return d.dist[i]
 }
-
 
 /*******************************************************************************
  * functions
@@ -61,7 +56,7 @@ func (d *distribution) Get(i uint64) uint64 {
  * @param      dist    Distribution
  */
 func ParseLog(path *string, stream *string, dist *distribution) {
-    
+
     // open access.log
     file, err := os.Open(*path)
     if err != nil {
@@ -72,7 +67,7 @@ func ParseLog(path *string, stream *string, dist *distribution) {
     // prepare filter
     time := time.Now().Unix() / 100
     regex := regexp.MustCompile(
-        "^" + strconv.FormatInt(time, 10) + "[\\d]{2}\\.[\\d]+.*?" + regexp.QuoteMeta(*stream) + "-([\\d]+).ts$")
+        "^" + strconv.FormatInt(time, 10) + "[\\d]{2}\\.[\\d]+.*?" + regexp.QuoteMeta(*stream) + "_(?:src|\\d+p)-([\\d]+).ts$")
 
     // iterate trough logfile
     scanner := bufio.NewScanner(file)
@@ -91,7 +86,6 @@ func ParseLog(path *string, stream *string, dist *distribution) {
     }
 }
 
-
 /**
  * @brief      Generate stats.json with the current number of subscribers
  *
@@ -109,23 +103,22 @@ func GenerateStat(dist *distribution, path *string, segments uint64) {
     }
 
     // write stats as JSON to file
-    err := os.WriteFile(*path, []byte("{\"subscribers\":" + strconv.FormatUint(subscribers, 10) + "}"), 0644)
+    err := os.WriteFile(*path, []byte("{\"subscribers\":"+strconv.FormatUint(subscribers, 10)+"}"), 0644)
     if err != nil {
         log.Fatal(err)
     }
 }
-
 
 /**
  * @brief      HLS Subscriber Stats
  */
 func main() {
     // CLI arguments
-    logfilePtr   := flag.String("input", "access.log", "Path to access.log")
+    logfilePtr := flag.String("input", "access.log", "Path to access.log")
     statsfilePtr := flag.String("output", "stream.json", "Path to stats.json")
-    streamPtr    := flag.String("name", "stream", "Name of the stream")
-    segmentsPtr  := flag.Uint64("segments", 3, "Number of stream segments to analyse")
-    intervalPtr  := flag.Int("interval", 10, "Pause between parsing operations in seconds")
+    streamPtr := flag.String("name", "stream", "Name of the stream")
+    segmentsPtr := flag.Uint64("segments", 3, "Number of stream segments to analyse")
+    intervalPtr := flag.Int("interval", 10, "Pause between parsing operations in seconds")
     flag.Parse()
 
     // parse log all n seconds
