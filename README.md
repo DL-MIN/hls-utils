@@ -1,41 +1,62 @@
-# HLS Subscriber Stats
+# HLS Utils
 
-To get meaningful statistics of a HTTP Live Stream (HLS), such as the current number of subscribers, it is necessary to analyze a *modified* `access.log`.
+A lightweight helper that adds some functionality to the [RTMP module](https://github.com/arut/nginx-rtmp-module) of nginx. It handles the authentication of streaming endpoints and generates current audience counts for a customized player.
+
+
+## Features
+
+- Authentication of streaming endpoints via API token
+- Current audience counts per streaming endpoint
 
 
 ## Requirements
 
-- golang
+- golang >= 1.19
 
 
 ## Build
 
 ```shell
-go build hls-subscriber-stats.go
+go mod tidy
+go build -a -buildmode=exe -trimpath
 ```
 
 
-## Usage (nginx)
+## Usage
 
-1.  Add an additional `log_format` to your `http` section:  
-    ```nginx
-    http {
-        log_format hls-subscriber-stats "$msec $request_filename";
+Adjust the given configuration file `config.yaml` to your desired values. The search paths for the configuration file are `./config.yaml` and `/etc/hls-utils/config.yaml`, otherwise define the path with the `-config` flag.
+
+```shell
+./hls-utils -config /path/to/config.yaml
+```
+
+
+## Nginx configuration
+
+Add an additional `log_format` to your `http` section:  
+```nginx
+http {
+    log_format hls-utils "$request_filename";
+}
+```
+
+Activate `access_log` in your `server` section:  
+```nginx
+server {
+    location ~* "\.ts$" {
+        access_log /path-log/hls.log hls-utils;
     }
-    ```
+}
+```
 
-2.  Activate `access_log` in your `server` section:  
-    ```nginx
+Set `hls_fragment_naming` in your RTMP/HLS section to `sequential`.
+
+```nginx
+rtmp {
     server {
-        access_log /path-log/hls-access.log hls-subscriber-stats;
+        application hls {
+            hls_fragment_naming sequential;
+        }
     }
-    ```
-
-3.  Execute *Go* program in your `application` section:
-    ```nginx
-    application stream {
-        live on;
-        hls  on;
-        exec_push /path-bin/hls-subscriber-stats -input /path-log/hls-access.log -output "/path-www/$name.json" -name "$name" -interval 10 -segments 3
-    }
-    ```
+}
+```
