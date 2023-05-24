@@ -33,6 +33,16 @@ Adjust the given configuration file `config.yaml` to your desired values. The se
 
 ## Nginx configuration
 
+> ⚠️ Note, that nginx must be started or reloaded after the creation of the access log. This could be achieved by checking the existance of the named pipe.
+
+```shell
+hls-utils &
+until [ -p /var/log/nginx/hls.log ]; do
+    sleep 1
+done
+nginx
+```
+
 Add an additional `log_format` to your `http` section:  
 ```nginx
 http {
