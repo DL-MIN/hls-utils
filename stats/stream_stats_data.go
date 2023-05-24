@@ -15,6 +15,8 @@ type StreamStatsData struct {
     fileJSON     *os.File
     filePlaylist string
     hits         map[uint64]uint64
+    lastSequence uint64
+    lastRead     int
 }
 
 func (s *StreamStats) newStreamStatsData(name string) {
@@ -51,7 +53,18 @@ func (s *StreamStatsData) getSortedKeys() (keys []uint64) {
 
 func (s *StreamStatsData) getMinOfN(n int) (min uint64) {
     keys := (*s).getSortedKeys()
-    min = (*s).hits[keys[len(keys)-1]]
+    if s.lastSequence == keys[len(keys)-1] {
+        if s.lastRead >= n {
+            min = 0
+            return
+        }
+        s.lastRead++
+    } else {
+        s.lastRead = 0
+    }
+
+    s.lastSequence = keys[len(keys)-1]
+    min = (*s).hits[s.lastSequence]
 
     if len(keys) > n {
         for i := 0; i < n; i++ {
