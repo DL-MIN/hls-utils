@@ -9,12 +9,14 @@ import (
 func authenticate(c *gin.Context) {
     if c.Request.FormValue("call") != "publish" {
         c.AbortWithStatus(http.StatusMethodNotAllowed)
+        return
     }
 
     configPath := "streams." + c.Request.FormValue("name")
 
     if viper.IsSet(configPath) && viper.GetString(configPath) == c.Request.FormValue("auth") {
         c.AbortWithStatus(http.StatusOK)
+        return
     }
 
     c.AbortWithStatus(http.StatusUnauthorized)
