@@ -95,7 +95,7 @@ build-go-alpine:
   parallel:
     matrix:
       - GOOS: linux
-        GOARCH: &ARCH [386, amd64, arm, arm64]
+        GOARCH: [386, amd64, arm, arm64]
   before_script:
     - apk add --no-cache curl
   script:
