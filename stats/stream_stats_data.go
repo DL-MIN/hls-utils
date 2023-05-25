@@ -35,8 +35,7 @@ type StreamStatsData struct {
 
 // newStreamStatsData creates and open a new JSON file. A new StreamStatsData is returned.
 func (s *StreamStats) newStreamStatsData(name string) {
-	fileJSON := path.Join(s.Path, name+".json")
-	file, err := os.OpenFile(fileJSON, os.O_CREATE|os.O_WRONLY, 0640)
+	file, err := os.OpenFile(path.Clean(path.Join(s.Path, name+".json")), os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		Warn(err)
 		return
@@ -47,12 +46,12 @@ func (s *StreamStats) newStreamStatsData(name string) {
 			if err := file.Close(); err != nil {
 				Warn(err)
 			}
-			if err := os.Remove(fileJSON); err != nil {
+			if err := os.Remove(file.Name()); err != nil {
 				Warn(err)
 			}
 		},
 		fileJSON:     file,
-		filePlaylist: path.Join(s.Path, name+".m3u8"),
+		filePlaylist: path.Clean(path.Join(s.Path, name+".m3u8")),
 		hits:         make(map[uint64]uint64),
 	}
 }

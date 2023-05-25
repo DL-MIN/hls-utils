@@ -50,7 +50,7 @@ func NewFIFOFile(source string) (f *FIFOFile, err error) {
 	}
 
 	Debugf("create fifo file %s", f.Source)
-	if err = unix.Mkfifo(f.Source, 0640); err != nil {
+	if err = unix.Mkfifo(f.Source, 0600); err != nil {
 		return
 	}
 
