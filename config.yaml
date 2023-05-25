@@ -29,7 +29,6 @@ stats:
   data: ./
 
   # Path to access log
-#  log: /var/log/nginx/hls.log
   log: ./hls.log
 
   # Parse access log (`name` and `sequence` are required)
