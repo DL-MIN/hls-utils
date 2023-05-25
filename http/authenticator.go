@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+// authenticate returns HTTP_OK if the given authentication token matches the stored one.
+// Otherwise, it returns HTTP_UNAUTHORIZED.
 func authenticate(c *gin.Context) {
 	if c.Request.FormValue("call") != "publish" {
 		c.AbortWithStatus(http.StatusMethodNotAllowed)

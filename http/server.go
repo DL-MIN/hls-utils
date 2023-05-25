@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Run starts a web server on the given IP address and port
 func Run() {
 	// Set GIN mode
 	if Level() == LevelDebug {

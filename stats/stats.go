@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+// Run creates an access log and starts reading, analyzing, and writing streaming reports as JSON files
 func Run() {
 	stats := NewStreamStats(path.Clean(viper.GetString("stats.data")))
 	regex, err := regexp.Compile(viper.GetString("stats.regex"))

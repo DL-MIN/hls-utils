@@ -1,11 +1,14 @@
 package logger
 
+// std is the default logger
 var std = NewLogger()
 
+// Default returns the default logger
 func Default() *Logger {
 	return std
 }
 
+// Aliases of logger functions
 var (
 	Level    = std.Level
 	SetLevel = std.SetLevel

@@ -10,15 +10,30 @@ import (
 	"path"
 )
 
+// StreamStatsData is used in StreamStats to collect the amount of viewer of a streaming endpoint
 type StreamStatsData struct {
-	Close        func()
-	fileJSON     *os.File
+	// close releases the file descriptor and removes the JSON file
+	close func()
+
+	// fileJSON contains the file descriptor of the JSON file
+	fileJSON *os.File
+
+	// filePlaylist is the path to the video playlist file
 	filePlaylist string
-	hits         map[uint64]uint64
+
+	// hits counts viewers per video sequence
+	hits map[uint64]uint64
+
+	// lastSequence is set to last to detect zero viewers
+	// It is set to the last key in hits on every write event.
 	lastSequence uint64
-	lastRead     int
+
+	// lastRead is set to detect zero viewers.
+	// It is incremented by 1 if lastSequence is equal to the last key in hits.
+	lastRead int
 }
 
+// newStreamStatsData creates and open a new JSON file. A new StreamStatsData is returned.
 func (s *StreamStats) newStreamStatsData(name string) {
 	fileJSON := path.Join(s.Path, name+".json")
 	file, err := os.OpenFile(fileJSON, os.O_CREATE|os.O_WRONLY, 0640)
@@ -28,7 +43,7 @@ func (s *StreamStats) newStreamStatsData(name string) {
 	}
 
 	(*s).data[name] = &StreamStatsData{
-		Close: func() {
+		close: func() {
 			if err := file.Close(); err != nil {
 				Warn(err)
 			}
@@ -42,6 +57,7 @@ func (s *StreamStats) newStreamStatsData(name string) {
 	}
 }
 
+// getSortedKeys returns an ascending ordered array of video sequences
 func (s *StreamStatsData) getSortedKeys() (keys []uint64) {
 	keys = make([]uint64, 0, len((*s).hits))
 	for item := range (*s).hits {
@@ -51,6 +67,7 @@ func (s *StreamStatsData) getSortedKeys() (keys []uint64) {
 	return
 }
 
+// getMinOfN determines the current amount of viewers by returning the smallest amount of the last n sequences
 func (s *StreamStatsData) getMinOfN(n int) (min uint64) {
 	keys := (*s).getSortedKeys()
 	if s.lastSequence == keys[len(keys)-1] {
@@ -74,6 +91,7 @@ func (s *StreamStatsData) getMinOfN(n int) (min uint64) {
 	return
 }
 
+// write stores the current amount of viewers to the JSON file
 func (s *StreamStatsData) write() error {
 	subscribers := s.getMinOfN(3)
 	_, err := os.Stat(s.filePlaylist)

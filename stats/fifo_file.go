@@ -9,14 +9,26 @@ import (
 	"strings"
 )
 
+// FIFOFile represents a pipe file. It is created by `mkfifo`.
 type FIFOFile struct {
-	Source   string
+	// Source is the path to the pipe file
+	Source string
+
+	// DataFunc is called on every line written to the pipe file
 	DataFunc func(string)
-	fd       *os.File
-	dataCh   chan string
-	errCh    chan error
+
+	// fd contains the file descriptor
+	fd *os.File
+
+	// dataCh is used to communicate between the concurrent reader and the DataFunc
+	dataCh chan string
+
+	// errCh is used to raise an error from the concurrent reader to ReadPipe
+	errCh chan error
 }
 
+// NewFIFOFile creates and open a new pipe file on given path.
+// A new FIFOFile with initialized channels is returned.
 func NewFIFOFile(source string) (f *FIFOFile, err error) {
 	Debugf("validate file path %s", source)
 	sourceStat, err := os.Stat(source)
@@ -54,6 +66,7 @@ func NewFIFOFile(source string) (f *FIFOFile, err error) {
 	return
 }
 
+// Close releases the file descriptor
 func (f *FIFOFile) Close() {
 	if err := f.fd.Close(); err != nil {
 		Warn(err)
@@ -64,6 +77,8 @@ func (f *FIFOFile) Close() {
 	}
 }
 
+// ReadPipe continuously reads from file and calls DataFunc for every line.
+// It returns if application is terminated or an error occurs.
 func (f *FIFOFile) ReadPipe() {
 	defer f.Close()
 
