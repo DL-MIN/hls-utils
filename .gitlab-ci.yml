@@ -14,7 +14,7 @@ variables:
   NAME: hls-utils
   PACKAGE_BASE_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages"
   PACKAGES_URL: "${PACKAGE_BASE_URL}/generic/${NAME}/${CI_COMMIT_TAG}"
-  GOPATH: "${CI_PROJECT_DIR}/.go"
+  GOPATH: "/go"
 
 default:
   image: alpine
@@ -36,25 +36,47 @@ stages:
 ## Test
 ## -----------------------------------------------------------------------------
 
-test-go 1/2:
+test-go 1/4:
   stage: test
   image: golang:alpine
   artifacts:
     reports:
-      junit: report.xml
+      junit: report1.xml
   before_script:
     - go install gotest.tools/gotestsum@latest
   script:
-    - '"${GOPATH}/bin/gotestsum" --junitfile report.xml --format testname'
+    - '"${GOPATH}/bin/gotestsum" --junitfile report1.xml --format testname'
 
-test-go 2/2:
+test-go 2/4:
   stage: test
   image: golangci/golangci-lint
   artifacts:
     reports:
-      junit: report.xml
+      junit: report2.xml
   script:
-    - golangci-lint run --out-format junit-xml --allow-parallel-runners > report.xml
+    - golangci-lint run --out-format junit-xml --allow-parallel-runners > report2.xml
+
+test-go 3/4:
+  stage: test
+  image: golang:alpine
+  artifacts:
+    reports:
+      junit: report3.xml
+  before_script:
+    - go install github.com/securego/gosec/v2/cmd/gosec@latest
+  script:
+    - '"${GOPATH}/bin/gosec" -fmt junit-xml -out report3.xml ./...'
+
+test-go 4/4:
+  stage: test
+  image: golang:alpine
+  artifacts:
+    paths:
+      - report.md
+  before_script:
+    - go install golang.org/x/vuln/cmd/govulncheck@latest
+  script:
+    - '"${GOPATH}/bin/govulncheck" -test ./... > report.md'
 
 test-yaml:
   stage: test
