@@ -7,14 +7,14 @@ func Default() *Logger {
 }
 
 var (
-	Level    = (*std).Level
-	SetLevel = (*std).SetLevel
-	Debug    = (*std).Debug
-	Debugf   = (*std).Debugf
-	Info     = (*std).Info
-	Infof    = (*std).Infof
-	Warn     = (*std).Warn
-	Warnf    = (*std).Warnf
-	Fatal    = (*std).Fatal
-	Fatalf   = (*std).Fatalf
+	Level    = std.Level
+	SetLevel = std.SetLevel
+	Debug    = std.Debug
+	Debugf   = std.Debugf
+	Info     = std.Info
+	Infof    = std.Infof
+	Warn     = std.Warn
+	Warnf    = std.Warnf
+	Fatal    = std.Fatal
+	Fatalf   = std.Fatalf
 )
