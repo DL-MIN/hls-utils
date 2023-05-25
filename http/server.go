@@ -20,7 +20,11 @@ func Run() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	server := &http.Server{Addr: fmt.Sprintf("%s:%d", viper.GetString("server.listen"), viper.GetInt("server.port")), Handler: router}
+	server := &http.Server{
+		Addr:              fmt.Sprintf("%s:%d", viper.GetString("server.listen"), viper.GetInt("server.port")),
+		Handler:           router,
+		ReadHeaderTimeout: time.Minute,
+	}
 
 	terminator.WaitGroup.Add(1)
 	go func() {
