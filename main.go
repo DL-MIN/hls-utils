@@ -8,21 +8,21 @@
 package main
 
 import (
-    "github.com/spf13/viper"
-    "hls-utils/http"
-    "hls-utils/logger"
-    "hls-utils/stats"
-    "hls-utils/terminator"
-    "log"
+	"github.com/spf13/viper"
+	"hls-utils/http"
+	"hls-utils/logger"
+	"hls-utils/stats"
+	"hls-utils/terminator"
+	"log"
 )
 
 func main() {
-    if err := loadConfig(); err != nil {
-        log.Fatal(err)
-    }
-    logger.SetLevel(viper.GetInt("loglevel"))
+	if err := loadConfig(); err != nil {
+		log.Fatal(err)
+	}
+	logger.SetLevel(viper.GetInt("loglevel"))
 
-    http.Run()
-    stats.Run()
-    terminator.WaitGroup.Wait()
+	http.Run()
+	stats.Run()
+	terminator.WaitGroup.Wait()
 }

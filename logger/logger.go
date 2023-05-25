@@ -8,93 +8,93 @@
 package logger
 
 import (
-    "fmt"
-    "log"
-    "os"
+	"fmt"
+	"log"
+	"os"
 )
 
 const (
-    LevelDebug = 0 + iota
-    LevelInfo
-    LevelWarn
-    LevelFatal
+	LevelDebug = 0 + iota
+	LevelInfo
+	LevelWarn
+	LevelFatal
 )
 
 type Logger struct {
-    level      int
-    loggerList [4]*log.Logger
+	level      int
+	loggerList [4]*log.Logger
 }
 
 func NewLogger() *Logger {
-    return &Logger{
-        level: LevelDebug,
-        loggerList: [4]*log.Logger{
-            log.New(os.Stdout, "[\u001B[0;37mDEBUG\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
-            log.New(os.Stdout, "[\u001B[0;32mINFO\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
-            log.New(os.Stderr, "[\u001B[0;33mWARNING\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
-            log.New(os.Stderr, "[\u001B[0;31mFATAL\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
-        },
-    }
+	return &Logger{
+		level: LevelDebug,
+		loggerList: [4]*log.Logger{
+			log.New(os.Stdout, "[\u001B[0;37mDEBUG\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
+			log.New(os.Stdout, "[\u001B[0;32mINFO\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
+			log.New(os.Stderr, "[\u001B[0;33mWARNING\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
+			log.New(os.Stderr, "[\u001B[0;31mFATAL\u001B[0m] ", log.Ldate|log.Ltime|log.Lshortfile),
+		},
+	}
 }
 
 func (l *Logger) Level() int {
-    return l.level
+	return l.level
 }
 
 func (l *Logger) SetLevel(level int) {
-    l.level = level
+	l.level = level
 }
 
 func (l *Logger) logWithLevel(level int, format *string, v ...any) {
-    if l.level > level {
-        return
-    }
+	if l.level > level {
+		return
+	}
 
-    var err error
+	var err error
 
-    if format == nil {
-        err = l.loggerList[level].Output(3, fmt.Sprint(v...))
-    } else {
-        err = l.loggerList[level].Output(3, fmt.Sprintf(*format, v...))
-    }
+	if format == nil {
+		err = l.loggerList[level].Output(3, fmt.Sprint(v...))
+	} else {
+		err = l.loggerList[level].Output(3, fmt.Sprintf(*format, v...))
+	}
 
-    if err != nil {
-        fmt.Println(err)
-    }
+	if err != nil {
+		fmt.Println(err)
+	}
 
-    if level == LevelFatal {
-        os.Exit(1)
-    }
+	if level == LevelFatal {
+		os.Exit(1)
+	}
 }
 
 func (l *Logger) Debug(v ...any) {
-    l.logWithLevel(LevelDebug, nil, v...)
+	l.logWithLevel(LevelDebug, nil, v...)
 }
 
 func (l *Logger) Debugf(format string, v ...any) {
-    l.logWithLevel(LevelDebug, &format, v...)
+	l.logWithLevel(LevelDebug, &format, v...)
 }
 
 func (l *Logger) Info(v ...any) {
-    l.logWithLevel(LevelInfo, nil, v...)
+	l.logWithLevel(LevelInfo, nil, v...)
 }
 
 func (l *Logger) Infof(format string, v ...any) {
-    l.logWithLevel(LevelInfo, &format, v...)
+	l.logWithLevel(LevelInfo, &format, v...)
 }
 
 func (l *Logger) Warn(v ...any) {
-    l.logWithLevel(LevelWarn, nil, v...)
+	l.logWithLevel(LevelWarn, nil, v...)
 }
 
 func (l *Logger) Warnf(format string, v ...any) {
-    l.logWithLevel(LevelWarn, &format, v...)
+	l.logWithLevel(LevelWarn, &format, v...)
 }
 
 func (l *Logger) Fatal(v ...any) {
-    l.logWithLevel(LevelFatal, nil, v...)
+	l.logWithLevel(LevelFatal, nil, v...)
 }
 
 func (l *Logger) Fatalf(format string, v ...any) {
-    l.logWithLevel(LevelFatal, &format, v...)
+	l.logWithLevel(LevelFatal, &format, v...)
 }
