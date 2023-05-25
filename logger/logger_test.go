@@ -3,6 +3,7 @@ package logger
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"io"
 	"log"
 	"os"
@@ -77,6 +78,7 @@ func TestLogger_Fatal(t *testing.T) {
 	cmd.Env = append(os.Environ(), "CRASHTEST=1", "GOCOVERDIR=/tmp")
 	bufReader, _ := cmd.StderrPipe()
 	err := cmd.Start()
+	require.NoError(t, err)
 	bufOut, _ := io.ReadAll(bufReader)
 	err = cmd.Wait()
 
