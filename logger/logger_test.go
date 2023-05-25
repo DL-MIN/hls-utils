@@ -24,42 +24,41 @@ func TestLogger_Print(t *testing.T) {
 		args   args
 		want   string
 	}{
-		{"debug one string", fields{Debug}, args{"%s", []any{"TEST"}}, "[\x1b[0;37mDEBUG\x1b[0m] TEST\n"},
-		{"debug two strings", fields{Debug}, args{"%s%s", []any{"TE", "ST"}}, "[\x1b[0;37mDEBUG\x1b[0m] TEST\n"},
-		{"debug one string and integer", fields{Debug}, args{"%s%d", []any{"TEST", 123}}, "[\x1b[0;37mDEBUG\x1b[0m] TEST123\n"},
-		{"info one string", fields{Info}, args{"%s", []any{"TEST"}}, "[\x1b[0;32mINFO\x1b[0m] TEST\n"},
-		{"info two strings", fields{Info}, args{"%s%s", []any{"TE", "ST"}}, "[\x1b[0;32mINFO\x1b[0m] TEST\n"},
-		{"info one string and integer", fields{Info}, args{"%s%d", []any{"TEST", 123}}, "[\x1b[0;32mINFO\x1b[0m] TEST123\n"},
-		{"warn one string", fields{Warn}, args{"%s", []any{"TEST"}}, "[\x1b[0;33mWARNING\x1b[0m] TEST\n"},
-		{"warn two strings", fields{Warn}, args{"%s%s", []any{"TE", "ST"}}, "[\x1b[0;33mWARNING\x1b[0m] TEST\n"},
-		{"warn one string and integer", fields{Warn}, args{"%s%d", []any{"TEST", 123}}, "[\x1b[0;33mWARNING\x1b[0m] TEST123\n"},
+		{"debug one string", fields{LevelDebug}, args{"%s", []any{"TEST"}}, "[\x1b[0;37mDEBUG\x1b[0m] TEST\n"},
+		{"debug two strings", fields{LevelDebug}, args{"%s%s", []any{"TE", "ST"}}, "[\x1b[0;37mDEBUG\x1b[0m] TEST\n"},
+		{"debug one string and integer", fields{LevelDebug}, args{"%s%d", []any{"TEST", 123}}, "[\x1b[0;37mDEBUG\x1b[0m] TEST123\n"},
+		{"info one string", fields{LevelInfo}, args{"%s", []any{"TEST"}}, "[\x1b[0;32mINFO\x1b[0m] TEST\n"},
+		{"info two strings", fields{LevelInfo}, args{"%s%s", []any{"TE", "ST"}}, "[\x1b[0;32mINFO\x1b[0m] TEST\n"},
+		{"info one string and integer", fields{LevelInfo}, args{"%s%d", []any{"TEST", 123}}, "[\x1b[0;32mINFO\x1b[0m] TEST123\n"},
+		{"warn one string", fields{LevelWarn}, args{"%s", []any{"TEST"}}, "[\x1b[0;33mWARNING\x1b[0m] TEST\n"},
+		{"warn two strings", fields{LevelWarn}, args{"%s%s", []any{"TE", "ST"}}, "[\x1b[0;33mWARNING\x1b[0m] TEST\n"},
+		{"warn one string and integer", fields{LevelWarn}, args{"%s%d", []any{"TEST", 123}}, "[\x1b[0;33mWARNING\x1b[0m] TEST123\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
-			l := NewLogger()
-			l.loggerList[tt.fields.level].SetOutput(&buf)
-			l.loggerList[tt.fields.level].SetFlags(0)
+			Default().loggerList[tt.fields.level].SetOutput(&buf)
+			Default().loggerList[tt.fields.level].SetFlags(0)
 
 			switch tt.fields.level {
-			case Debug:
-				l.Debug(tt.args.v...)
-			case Info:
-				l.Info(tt.args.v...)
-			case Warn:
-				l.Warn(tt.args.v...)
+			case LevelDebug:
+				Debug(tt.args.v...)
+			case LevelInfo:
+				Info(tt.args.v...)
+			case LevelWarn:
+				Warn(tt.args.v...)
 			}
 
 			assert.Equal(t, tt.want, buf.String())
 			buf.Reset()
 
 			switch tt.fields.level {
-			case Debug:
-				l.Debugf(tt.args.format, tt.args.v...)
-			case Info:
-				l.Infof(tt.args.format, tt.args.v...)
-			case Warn:
-				l.Warnf(tt.args.format, tt.args.v...)
+			case LevelDebug:
+				Debugf(tt.args.format, tt.args.v...)
+			case LevelInfo:
+				Infof(tt.args.format, tt.args.v...)
+			case LevelWarn:
+				Warnf(tt.args.format, tt.args.v...)
 			}
 
 			assert.Equal(t, tt.want, buf.String())
@@ -69,14 +68,13 @@ func TestLogger_Print(t *testing.T) {
 
 func TestLogger_Fatal(t *testing.T) {
 	if os.Getenv("CRASHTEST") == "1" {
-		l := NewLogger()
-		l.loggerList[Fatal].SetFlags(0)
-		l.Fatalf("%s%d", "TEST", 123)
+		Default().loggerList[LevelFatal].SetFlags(0)
+		Fatalf("%s%d", "TEST", 123)
 		return
 	}
 
-	cmd := exec.Command(os.Args[0], "-test.run=TestLogger_Fatal")
-	cmd.Env = append(os.Environ(), "CRASHTEST=1")
+	cmd := exec.Command(os.Args[0], append(os.Args[1:], "-test.run=TestLogger_Fatal")...)
+	cmd.Env = append(os.Environ(), "CRASHTEST=1", "GOCOVERDIR=/tmp")
 	bufReader, _ := cmd.StderrPipe()
 	err := cmd.Start()
 	bufOut, _ := io.ReadAll(bufReader)
@@ -99,10 +97,10 @@ func TestLogger_Level(t *testing.T) {
 		fields fields
 		want   int
 	}{
-		{"debug level", fields{Debug}, Debug},
-		{"info level", fields{Info}, Info},
-		{"warn level", fields{Warn}, Warn},
-		{"fatal level", fields{Fatal}, Fatal},
+		{"debug level", fields{LevelDebug}, LevelDebug},
+		{"info level", fields{LevelInfo}, LevelInfo},
+		{"warn level", fields{LevelWarn}, LevelWarn},
+		{"fatal level", fields{LevelFatal}, LevelFatal},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -128,17 +126,16 @@ func TestLogger_SetLevel(t *testing.T) {
 		args  args
 		wants fields
 	}{
-		{"debug level", args{Debug}, fields{Debug}},
-		{"info level", args{Info}, fields{Info}},
-		{"warn level", args{Warn}, fields{Warn}},
-		{"fatal level", args{Fatal}, fields{Fatal}},
+		{"debug level", args{LevelDebug}, fields{LevelDebug}},
+		{"info level", args{LevelInfo}, fields{LevelInfo}},
+		{"warn level", args{LevelWarn}, fields{LevelWarn}},
+		{"fatal level", args{LevelFatal}, fields{LevelFatal}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := &Logger{}
-			l.SetLevel(tt.args.level)
+			SetLevel(tt.args.level)
 		})
-		assert.Equal(t, tt.wants.level, tt.args.level)
+		assert.Equal(t, tt.wants.level, Level())
 	}
 }
 
@@ -172,21 +169,20 @@ func TestLogger_logWithLevel(t *testing.T) {
 		setLevel int
 		want     string
 	}{
-		{"debug level", args{Debug, nil, []any{"TEST"}}, Debug, "[\x1b[0;37mDEBUG\x1b[0m] TEST\n"},
-		{"info level", args{Info, nil, []any{"TEST"}}, Info, "[\x1b[0;32mINFO\x1b[0m] TEST\n"},
-		{"warn level", args{Warn, nil, []any{"TEST"}}, Warn, "[\x1b[0;33mWARNING\x1b[0m] TEST\n"},
-		{"debug at warn level", args{Debug, nil, []any{"TEST"}}, Warn, ""},
-		{"info at warn level", args{Info, nil, []any{"TEST"}}, Warn, ""},
+		{"debug level", args{LevelDebug, nil, []any{"TEST"}}, LevelDebug, "[\x1b[0;37mDEBUG\x1b[0m] TEST\n"},
+		{"info level", args{LevelInfo, nil, []any{"TEST"}}, LevelInfo, "[\x1b[0;32mINFO\x1b[0m] TEST\n"},
+		{"warn level", args{LevelWarn, nil, []any{"TEST"}}, LevelWarn, "[\x1b[0;33mWARNING\x1b[0m] TEST\n"},
+		{"debug at warn level", args{LevelDebug, nil, []any{"TEST"}}, LevelWarn, ""},
+		{"info at warn level", args{LevelInfo, nil, []any{"TEST"}}, LevelWarn, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
-			l := NewLogger()
-			l.SetLevel(tt.setLevel)
-			l.loggerList[tt.setLevel].SetOutput(&buf)
-			l.loggerList[tt.setLevel].SetFlags(0)
+			SetLevel(tt.setLevel)
+			Default().loggerList[tt.setLevel].SetOutput(&buf)
+			Default().loggerList[tt.setLevel].SetFlags(0)
 
-			l.logWithLevel(tt.args.level, tt.args.format, tt.args.v...)
+			Default().logWithLevel(tt.args.level, tt.args.format, tt.args.v...)
 
 			assert.Equal(t, tt.want, buf.String())
 		})
