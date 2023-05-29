@@ -1,14 +1,45 @@
 package stats
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gogo/protobuf/sortkeys"
 	"golang.org/x/sys/unix"
 	. "hls-utils/logger"
+	"net/http"
 	"os"
 	"path"
 )
+
+// AnalyzeNSequences defines the amount of last the sequences to be analyzed
+const AnalyzeNSequences = 3
+
+// ResponseJSON is used as a template to store statistics in the web server's path
+type ResponseJSON struct {
+	Status int    `json:"status"`
+	Code   string `json:"code"`
+	Title  string `json:"title"`
+	Data   struct {
+		Subscribers struct {
+			Current uint64             `json:"current"`
+			History *map[uint64]uint64 `json:"history"`
+		} `json:"subscribers"`
+	} `json:"data"`
+}
+
+// newStreamStatsDataJSON creates and fills a response structure
+func (s *StreamStatsData) newStreamStatsDataJSON() (sj *ResponseJSON) {
+	sj = &ResponseJSON{
+		Status: http.StatusOK,
+		Code:   "load_hls_statistics",
+		Title:  "Successfully load HLS statistics",
+	}
+	sj.Data.Subscribers.Current = s.getMinOfN(AnalyzeNSequences)
+	sj.Data.Subscribers.History = &s.hits
+
+	return
+}
 
 // StreamStatsData is used in StreamStats to collect the amount of viewer of a streaming endpoint
 type StreamStatsData struct {
@@ -92,8 +123,12 @@ func (s *StreamStatsData) getMinOfN(n int) (min uint64) {
 
 // write stores the current amount of viewers to the JSON file
 func (s *StreamStatsData) write() error {
-	subscribers := s.getMinOfN(3)
-	_, err := os.Stat(s.filePlaylist)
+	responseJSON, err := json.Marshal(s.newStreamStatsDataJSON())
+	if err != nil {
+		return err
+	}
+
+	_, err = os.Stat(s.filePlaylist)
 	if err != nil {
 		return ErrPlaylistNotExist(s.filePlaylist)
 	}
@@ -116,7 +151,7 @@ func (s *StreamStatsData) write() error {
 				return
 			}
 
-			if _, err := fmt.Fprintf(s.fileJSON, `{"subscribers":%d}`, subscribers); err != nil {
+			if _, err := fmt.Fprintf(s.fileJSON, `%s`, responseJSON); err != nil {
 				Warn(err)
 			}
 		} else if !errors.Is(err, unix.EAGAIN) {
