@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/spf13/viper"
 )
 
@@ -9,7 +10,7 @@ import (
 // This ensures that critical configuration values are set.
 func setDefaultConfig() {
 	viper.SetDefault("loglevel", 1)
-	viper.SetDefault("server.host", "127.0.0.1")
+	viper.SetDefault("server.listen", "127.0.0.1")
 	viper.SetDefault("server.port", 80)
 	viper.SetDefault("stats.data", "./")
 	viper.SetDefault("stats.log", "./hls.log")
