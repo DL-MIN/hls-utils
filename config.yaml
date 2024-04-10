@@ -18,11 +18,13 @@ server:
   listen: 127.0.0.1
 
   # Listen to specific port
-  port: 8080
+  port: 8081
 
 # List of streaming endpoints and their API key
 streams:
   test: 643c0763-c6f0-4cf6-8f7e-fb2addbd0aee
+
+notify:
 
 stats:
   # Path to `.m3u8` and `.json` files
