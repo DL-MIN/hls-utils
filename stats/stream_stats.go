@@ -1,14 +1,15 @@
 package stats
 
 import (
-	. "hls-utils/logger"
-	"hls-utils/terminator"
 	"sync"
 	"time"
+
+	. "hls-utils/logger"
+	"hls-utils/terminator"
 )
 
 // WriteJSONInterval defines the amount of time to wait between writing JSON files
-const WriteJSONInterval = 1 * time.Second
+const WriteJSONInterval = 10 * time.Second
 
 // StreamStats collects the amount of viewers per streaming endpoint
 type StreamStats struct {
