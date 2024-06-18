@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gogo/protobuf/sortkeys"
-	"golang.org/x/sys/unix"
-	. "hls-utils/logger"
 	"net/http"
 	"os"
 	"path"
+
+	"github.com/gogo/protobuf/sortkeys"
+	"golang.org/x/sys/unix"
+	. "hls-utils/logger"
 )
 
 // AnalyzeNSequences defines the amount of last the sequences to be analyzed
-const AnalyzeNSequences = 3
+const AnalyzeNSequences = 5
 
 // ResponseJSON is used as a template to store statistics in the web server's path
 type ResponseJSON struct {
@@ -35,7 +36,7 @@ func (s *StreamStatsData) newStreamStatsDataJSON() (sj *ResponseJSON) {
 		Code:   "load_hls_statistics",
 		Title:  "Successfully load HLS statistics",
 	}
-	sj.Data.Subscribers.Current = s.getMinOfN(AnalyzeNSequences)
+	sj.Data.Subscribers.Current = s.getMaxOfN(AnalyzeNSequences)
 	sj.Data.Subscribers.History = &s.hits
 
 	return
@@ -97,12 +98,12 @@ func (s *StreamStatsData) getSortedKeys() (keys []uint64) {
 	return
 }
 
-// getMinOfN determines the current amount of viewers by returning the smallest amount of the last n sequences
-func (s *StreamStatsData) getMinOfN(n int) (min uint64) {
+// getMaxOfN determines the current amount of viewers by returning the smallest amount of the last n sequences
+func (s *StreamStatsData) getMaxOfN(n int) (max uint64) {
 	keys := (*s).getSortedKeys()
 	if s.lastSequence == keys[len(keys)-1] {
 		if s.lastRead >= n {
-			min = 0
+			max = 0
 			return
 		}
 		s.lastRead++
@@ -111,11 +112,11 @@ func (s *StreamStatsData) getMinOfN(n int) (min uint64) {
 	}
 
 	s.lastSequence = keys[len(keys)-1]
-	min = (*s).hits[s.lastSequence]
+	max = (*s).hits[s.lastSequence]
 
 	if len(keys) > n {
 		for i := 0; i < n; i++ {
-			min = Min(min, (*s).hits[keys[len(keys)-1-i]])
+			max = Max(max, (*s).hits[keys[len(keys)-1-i]])
 		}
 	}
 	return
