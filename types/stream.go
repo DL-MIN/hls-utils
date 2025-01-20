@@ -1,13 +1,10 @@
 package types
 
 import (
-	"fmt"
 	"io"
 	"os"
-	"path"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -24,12 +21,7 @@ func NewStream(name, filename string, config *Config) (stream *Stream, err error
 		config:       config,
 		PlaylistFile: filename,
 	}
-	stream.Statistics, err = NewStreamStatistics(
-		path.Join(
-			config.RecordDirectory,
-			fmt.Sprintf("%s-%s.csv", name, time.Now().UTC().Format("2006-01-02-15-04-05")),
-		),
-	)
+	stream.Statistics, err = NewStreamStatistics(config.RecordDirectory, name)
 	if err != nil {
 		return nil, err
 	}

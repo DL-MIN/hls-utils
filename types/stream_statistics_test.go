@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewStreamStatistics(t *testing.T) {
-	stats, err := NewStreamStatistics("")
+	stats, err := NewStreamStatistics("", "")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, stats.clientsBlue)
@@ -17,7 +17,7 @@ func TestNewStreamStatistics(t *testing.T) {
 }
 
 func TestAddClient(t *testing.T) {
-	stats, err := NewStreamStatistics("")
+	stats, err := NewStreamStatistics("", "")
 
 	assert.NoError(t, err)
 
@@ -29,7 +29,7 @@ func TestAddClient(t *testing.T) {
 }
 
 func TestLen(t *testing.T) {
-	stats, err := NewStreamStatistics("")
+	stats, err := NewStreamStatistics("", "")
 	assert.NoError(t, err)
 
 	stats.Add("client1")
@@ -41,12 +41,13 @@ func TestLen(t *testing.T) {
 }
 
 func TestRotate(t *testing.T) {
-	stats, err := NewStreamStatistics("")
+	stats, err := NewStreamStatistics("", "")
 	assert.NoError(t, err)
 
 	clientID := "test-client"
 	stats.Add(clientID)
-	stats.Rotate()
+	err = stats.Rotate()
+	assert.NoError(t, err)
 
 	assert.NotNil(t, stats.clientsBlue)
 	assert.NotNil(t, stats.clientsGreen)
@@ -58,7 +59,7 @@ func TestRotate(t *testing.T) {
 }
 
 func TestDuplicateClients(t *testing.T) {
-	stats, err := NewStreamStatistics("")
+	stats, err := NewStreamStatistics("", "")
 	assert.NoError(t, err)
 
 	clientID := "test-client"
@@ -68,13 +69,14 @@ func TestDuplicateClients(t *testing.T) {
 }
 
 func TestConsecutiveRotations(t *testing.T) {
-	stats, err := NewStreamStatistics("")
+	stats, err := NewStreamStatistics("", "")
 	assert.NoError(t, err)
 
 	for i := 0; i < 5; i++ {
 		clientID := fmt.Sprintf("client-%d", i)
 		stats.Add(clientID)
-		stats.Rotate()
+		err = stats.Rotate()
+		assert.NoError(t, err)
 	}
 	assert.Equal(t, 1, stats.Len())
 	assert.Len(t, stats.Timeline(), 5)

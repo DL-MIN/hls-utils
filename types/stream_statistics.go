@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"os"
+	"path"
 	"sync"
 	"time"
 )
@@ -24,7 +25,7 @@ type StreamStatistics struct {
 	// timeline keeps track of the number of clients at different points in time after each rotation.
 	timeline map[time.Time]int
 
-	// fd contains the file descriptor
+	// fd contains the file descriptor.
 	fd *os.File
 
 	// useBlue indicates which map (blue or green) is currently active for adding and counting clients.
@@ -33,7 +34,7 @@ type StreamStatistics struct {
 
 // NewStreamStatistics initializes a new StreamStatistics instance,
 // setting up both maps and start with clientsBlue.
-func NewStreamStatistics(filename string) (stats *StreamStatistics, err error) {
+func NewStreamStatistics(recordDir, name string) (stats *StreamStatistics, err error) {
 	stats = &StreamStatistics{
 		clientsBlue:  make(map[string]struct{}),
 		clientsGreen: make(map[string]struct{}),
@@ -41,7 +42,7 @@ func NewStreamStatistics(filename string) (stats *StreamStatistics, err error) {
 		useBlue:      true,
 	}
 
-	err = stats.createCSV(filename)
+	err = stats.createCSV(recordDir, name)
 
 	return
 }
@@ -97,18 +98,22 @@ func (r *StreamStatistics) Timeline() map[time.Time]int {
 	return r.timeline
 }
 
-func (r *StreamStatistics) createCSV(filename string) (err error) {
-	if filename != "" {
-		err = os.Truncate(filename, 0)
-		if err != nil {
-			if os.IsNotExist(err) {
-				err = nil
-			} else {
-				return err
-			}
+// createCSV creates a CSV file with the given name in the specified directory.
+// It appends a timestamp to the filename to ensure uniqueness.
+// If the file already exists, it truncates it to zero length before writing.
+func (r *StreamStatistics) createCSV(recordDir, name string) (err error) {
+	if name != "" {
+		filename := path.Join(
+			recordDir,
+			fmt.Sprintf("%s-%s.csv", name, time.Now().UTC().Format("2006-01-02-15-04-05")),
+		)
+
+		err = os.Truncate(path.Clean(filename), 0)
+		if err != nil && !os.IsNotExist(err) {
+			return err
 		}
 
-		r.fd, err = os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		r.fd, err = os.OpenFile(path.Clean(filename), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
 			return
 		}
@@ -118,6 +123,8 @@ func (r *StreamStatistics) createCSV(filename string) (err error) {
 	return
 }
 
+// writeCSVRow writes a row to the CSV file with the given time and number of clients.
+// It formats the time in UTC as "YYYY-MM-DD HH:MM:SS" and appends it to the file.
 func (r *StreamStatistics) writeCSVRow(time time.Time, clients int) (err error) {
 	if r.fd != nil {
 		_, err = fmt.Fprintf(r.fd, "%s,%d\n", time.UTC().Format("2006-01-02 15:04:05"), clients)
