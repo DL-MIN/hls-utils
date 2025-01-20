@@ -1,28 +1,26 @@
-/*******************************************************************************
- * HLS Utils
- *
- * @author     Lars Thoms <lars@thoms.io>
- * @date       2022-11-25
- ******************************************************************************/
-
 package main
 
 import (
-	"github.com/spf13/viper"
-	"hls-utils/http"
-	"hls-utils/logger"
-	"hls-utils/stats"
-	"hls-utils/terminator"
-	"log"
+	"github.com/spacecafe/gobox/httpserver"
+	"github.com/spacecafe/gobox/logger"
+	"github.com/spacecafe/gobox/terminator"
+	"hls-utils/types"
 )
 
 func main() {
-	if err := loadConfig(); err != nil {
-		log.Fatal(err)
-	}
-	logger.SetLevel(viper.GetInt("loglevel"))
+	term := terminator.New(terminator.NewConfig())
+	config := types.NewConfig()
 
-	http.Run()
-	stats.Run()
-	terminator.WaitGroup.Wait()
+	streamManager := types.NewStreamManager(config)
+	if err := streamManager.Start(term.FullTracking()); err != nil {
+		logger.Fatal(err)
+	}
+
+	server := httpserver.NewHTTPServer(config.HTTPServer)
+	setupRouter(server.Router, config, streamManager)
+	if err := server.Start(term.FullTracking()); err != nil {
+		logger.Fatal(err)
+	}
+
+	term.Wait()
 }
