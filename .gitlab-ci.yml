@@ -2,41 +2,16 @@
 ## GitLab CI configuration file
 ##
 ## @author     Lars Thoms <lars@thoms.io>
-## @date       2023-05-28
+## @date       2025-01-20
 ## -----------------------------------------------------------------------------
 
 ---
-## -----------------------------------------------------------------------------
-## Configuration
-## -----------------------------------------------------------------------------
-
 include:
   - project: dl.min/technik/git-templates
     file:
-      - /GitLab CI/Go.gitlab-ci.yml
-      - /GitLab CI/YAML.gitlab-ci.yml
+      - /gitlab-ci/go/all.yml
+      - /gitlab-ci/yaml/all.yml
 
 variables:
   NAME: hls-utils
-
-stages:
-  - test
-  - build
-  - deploy
-  - release
-
-
-## -----------------------------------------------------------------------------
-## Build
-## -----------------------------------------------------------------------------
-
-build-go-debian:
-  parallel:
-    matrix:
-      - GOOS: darwin
-        GOARCH: [amd64, arm64]
-      - GOOS: freebsd
-        GOARCH: &ARCH [386, amd64, arm, arm64]
-      - GOOS: linux
-        GOARCH: *ARCH
 ...
