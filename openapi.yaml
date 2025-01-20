@@ -1,0 +1,202 @@
+openapi: 3.0.0
+info:
+  title: HLS Utils
+  version: 1.0.0
+paths:
+  /auth:
+    get:
+      summary: Authenticate a stream
+      parameters:
+        - in: path
+          name: call
+          schema:
+            type: string
+            enum:
+              - publish
+          required: true
+        - in: path
+          name: name
+          schema:
+            type: string
+            format: printascii
+          required: true
+        - in: path
+          name: auth
+          schema:
+            type: string
+            format: printascii
+          required: true
+      responses:
+        '200':
+          description: Successful authentication
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    post:
+      summary: Authenticate a stream
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthenticateRequest'
+      responses:
+        '200':
+          description: Successful authentication
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /{name}/index.m3u8:
+    get:
+      summary: Get playlist for a stream
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+            format: printascii
+      responses:
+        '200':
+          description: Playlist returned successfully
+          content:
+            application/vnd.apple.mpegurl:
+              schema:
+                type: string
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: No such stream
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /{name}/{client_id}/{variant}/index.m3u8:
+    get:
+      summary: Get variant playlist for a stream
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+            format: printascii
+        - in: path
+          name: client_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: variant
+          required: true
+          schema:
+            type: string
+            format: printascii
+      responses:
+        '200':
+          description: Variant playlist returned successfully
+          content:
+            application/vnd.apple.mpegurl:
+              schema:
+                type: string
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: No such stream
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /{name}/statistics:
+    get:
+      summary: Get statistics for a stream
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+            format: printascii
+      responses:
+        '200':
+          description: Statistics returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: No such stream
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    AuthenticateRequest:
+      type: object
+      required:
+        - call
+        - name
+        - auth
+      properties:
+        call:
+          type: string
+          enum:
+            - publish
+        name:
+          type: string
+          format: printascii
+        auth:
+          type: string
+          format: printascii
+    Statistics:
+      type: object
+      properties:
+        subscribers:
+          type: integer
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
