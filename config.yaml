@@ -1,0 +1,24 @@
+---
+log_level: info
+
+http_server:
+  host: 0.0.0.0
+  port: 8080
+  base_path:
+  cert_file:
+  key_file:
+  read_timeout:
+  read_header_timeout:
+
+live_dir: /tmp
+record_dir: /tmp
+statistic_rotation_interval: 10s
+notification_endpoint:
+
+track_labels:
+  audio_0: Enhanced Speech
+  audio_1: Original
+
+streams:
+  test: secret
+...
