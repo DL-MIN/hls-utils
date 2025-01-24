@@ -2,15 +2,25 @@
 ## GitLab CI configuration file
 ##
 ## @author     Lars Thoms <lars@thoms.io>
-## @date       2025-01-20
+## @date       2025-01-24
 ## -----------------------------------------------------------------------------
 
 ---
 include:
   - project: dl.min/technik/git-templates
     file:
-      - /gitlab-ci/go/all.yml
-      - /gitlab-ci/yaml/all.yml
+      - /gitlab-ci/defaults.yml
+      - /gitlab-ci/go/update.yml
+  - project: dl.min/technik/git-templates
+    file:
+      - /gitlab-ci/git-security.yml
+      - /gitlab-ci/go/test.yml
+      - /gitlab-ci/go/build.yml
+      - /gitlab-ci/go/deploy.yml
+      - /gitlab-ci/yaml/test.yml
+      - /gitlab-ci/release.yml
+    rules:
+      - if: $CI_PIPELINE_SOURCE != "schedule"
 
 variables:
   NAME: hls-utils
