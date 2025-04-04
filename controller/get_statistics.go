@@ -9,8 +9,7 @@ import (
 func GetStatistics(streamManager *types.StreamManager) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var params types.GetStatisticsParams
-		var err error
-		if err = ctx.ShouldBindUri(&params); err != nil {
+		if err := ctx.ShouldBindUri(&params); err != nil {
 			problems.ProblemBadRequest.WithError(err).Abort(ctx)
 			return
 		}
