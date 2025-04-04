@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	PlaylistRegex = regexp.MustCompile(`([a-zA-Z0-9._/-]+\\.m3u8)`)
+	PlaylistRegex = regexp.MustCompile(`([a-zA-Z0-9._/-]+\.m3u8)`)
 )
 
 type StreamManager struct {
